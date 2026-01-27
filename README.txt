@@ -39,3 +39,9 @@ This script automates that process with zero manual intervention.
 Requires Windows with PowerShell available.
 No installation needed — just run the .exe file.
 Affinity mask logic can be customized if you want different core layouts.
+
+Versions
+
+CS2 Core Affinity Manager - No Window.exe (Runs in background. No Pop-up Window. If you wanted to add it as a start-up app/service)
+CS2 Core Affinity Manager.exe (Exe version to add to to Steam Library as you cannot add .bat)
+CS2-Core-Affinity-Manager.bat (Raw script)

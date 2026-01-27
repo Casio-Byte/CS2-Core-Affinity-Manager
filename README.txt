@@ -33,7 +33,7 @@ This script automates that process with zero manual intervention.
 
 📝 Notes
 Requires Windows with PowerShell available.
-No installation needed — just run the .exe file.
+No installation needed — just run the .exe or .bat file.
 Affinity mask logic can be customized if you want different core layouts.
 
 Versions

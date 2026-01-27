@@ -2,13 +2,9 @@
 
 🔧 Automatic CPU Affinity Assignment
 Detects the number of logical CPU cores on your system.
-Builds an affinity mask that enables all cores except the last one.
+Builds an affinity mask that enables all cores except core zero.
 Applies the mask to cs2.exe as soon as the game starts.
 Reapplies the setting every time CS2 is launched.
-
-🕵️ Continuous Process Monitoring
-Displays CS2’s resource usage (PID, memory, etc.) in a live‑updating loop.
-Refreshes every 5 seconds.
 
 ♻️ Persistent Loop
 If CS2 closes, the script waits for the next launch and reapplies affinity automatically.
@@ -18,7 +14,7 @@ If CS2 closes, the script waits for the next launch and reapplies affinity autom
 1. PowerShell Affinity Manager
 The script:
 Waits for cs2.exe to appear.
-Calculates a CPU affinity mask based on your system’s logical cores.
+Calculates a CPU affinity mask based on your system’s number of logical cores.
 Applies the mask using PowerShell’s ProcessorAffinity property.
 Monitors until CS2 exits, then resets and waits again.
 
@@ -32,7 +28,7 @@ Updates every 5 seconds
 Some players prefer to:
 Reserve a CPU core for background tasks
 Improve system responsiveness while gaming
-Experiment with performance tuning for Source 2 titles
+Experiment with performance tuning for CS2
 This script automates that process with zero manual intervention.
 
 📝 Notes
@@ -41,6 +37,6 @@ No installation needed — just run the .exe file.
 Affinity mask logic can be customized if you want different core layouts.
 
 Versions
-CS2 Core Affinity Manager - No Window.exe (Runs in background. No Pop-up Window. If you wanted to add it as a start-up app/service)
-CS2 Core Affinity Manager.exe (Exe version to add to to Steam Library as you cannot add .bat)
+CS2 Core Affinity Manager - No Window.exe (Runs in background. No Pop-up Window. If you wanted to add it as a start-up app/service.)
+CS2 Core Affinity Manager.exe (Exe version to add to to Steam Library as you cannot add .bat's)
 CS2-Core-Affinity-Manager.bat (Raw script)

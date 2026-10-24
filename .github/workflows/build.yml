@@ -1,0 +1,71 @@
+name: Build exes
+
+# Builds both .exe versions from CS2-Core-Affinity-Manager.ps1 with ps2exe.
+# Every push: download them from the run's "Artifacts".
+# Push a tag like v2.0.0: they are also attached to a GitHub Release.
+on:
+  push:
+    branches: [main, master]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Lint
+        shell: powershell
+        run: |
+          Install-Module PSScriptAnalyzer -Force -Scope CurrentUser
+          $issues = Invoke-ScriptAnalyzer -Path CS2-Core-Affinity-Manager.ps1 -Severity Error
+          $issues | Format-Table -AutoSize
+          if ($issues) { exit 1 }
+
+      - name: Build
+        shell: powershell
+        run: |
+          Install-Module ps2exe -Force -Scope CurrentUser
+          New-Item -ItemType Directory dist | Out-Null
+          $common = @{
+            inputFile   = 'CS2-Core-Affinity-Manager.ps1'
+            title       = 'CS2 Core Affinity Manager'
+            description = 'Pins cs2.exe to chosen CPU cores'
+            version     = '2.0.0.0'
+          }
+          Invoke-ps2exe @common -outputFile 'dist\CS2 Core Affinity Manager.exe'
+          Invoke-ps2exe @common -outputFile 'dist\CS2 Core Affinity Manager - No Window.exe' -noConsole -noOutput -noError
+          Copy-Item CS2-Core-Affinity-Manager.ps1, CS2-Core-Affinity-Manager.bat, README.md dist\
+          Get-ChildItem dist
+
+      - name: Smoke test
+        shell: powershell
+        run: |
+          # Fake "cs2" process: a renamed copy of ping that runs for ~20s.
+          Copy-Item "$env:WINDIR\System32\PING.EXE" "$env:RUNNER_TEMP\cs2.exe"
+          $game = Start-Process "$env:RUNNER_TEMP\cs2.exe" -ArgumentList '-n 20 127.0.0.1' -PassThru -WindowStyle Hidden
+          $mgr = Start-Process 'dist\CS2 Core Affinity Manager - No Window.exe' -ArgumentList '-Once -ApplyDelaySeconds 1 -PollSeconds 1' -PassThru
+          Start-Sleep -Seconds 6
+          $game.Refresh()
+          $mask = $game.ProcessorAffinity.ToInt64()
+          $all = [long][Math]::Pow(2, [Environment]::ProcessorCount) - 1
+          Write-Output ("cs2 affinity: 0x{0:X} (all cores = 0x{1:X})" -f $mask, $all)
+          Get-Content "$env:LOCALAPPDATA\CS2AffinityManager\log.txt"
+          Stop-Process -Id $game.Id, $mgr.Id -ErrorAction SilentlyContinue
+          if (($mask -band 1) -ne 0) { throw 'Core 0 was not removed from cs2 affinity' }
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: CS2-Core-Affinity-Manager
+          path: dist/*
+
+      - name: Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
